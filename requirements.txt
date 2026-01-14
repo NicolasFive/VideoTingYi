@@ -1,0 +1,6 @@
+assemblyai==0.48.4
+ffmpeg-python==0.2.0
+requests
+fastapi>=0.104.0
+uvicorn>=0.24.0
+pydantic>=2.4.0
