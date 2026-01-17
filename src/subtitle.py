@@ -151,23 +151,20 @@ def handle_oversize_sentences(json_data, video_width, base_font_size):
         start = item.get("start", 0)
         end = item.get("end", 0)
         text = item.get("text", "")
-        if len(text) >= chunk_size:
-            chunks = split_text_with_punctuation_check(text, chunk_size)
-            if len(chunks) > 2:
-                chunks_steps = split_into_n_segments_int(start, end, len(chunks))
-                max_line = 2
-                for idx in range(0,len(chunks),max_line): 
-                    arr = chunks[idx:idx+max_line]
-                    copied = item.copy()
-                    copied["text"] = r"\n".join(arr)
-                    copied["start"] = chunks_steps[idx][0]
-                    copied["end"] = chunks_steps[idx+len(arr)-1][1]
-                    handled_json_data.append(copied)
-            else:
-                text = r"\n".join(chunks)
-                item["text"] = text
-                handled_json_data.append(item)
+        chunks = split_text_with_punctuation_check(text, chunk_size)
+        if len(chunks) > 2:
+            chunks_steps = split_into_n_segments_int(start, end, len(chunks))
+            max_line = 2
+            for idx in range(0,len(chunks),max_line): 
+                arr = chunks[idx:idx+max_line]
+                copied = item.copy()
+                copied["text"] = r"\n".join(arr)
+                copied["start"] = chunks_steps[idx][0]
+                copied["end"] = chunks_steps[idx+len(arr)-1][1]
+                handled_json_data.append(copied)
         else:
+            text = r"\n".join(chunks)
+            item["text"] = text
             handled_json_data.append(item)
     return handled_json_data
 
