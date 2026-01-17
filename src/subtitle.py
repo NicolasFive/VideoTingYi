@@ -30,38 +30,80 @@ def hex_to_ssa_color(hex_color):
 
 def split_text_with_punctuation_check(text, chunk_size):
     """
-    按固定长度分割，如果下一个字符是标点符号，则包含到当前块中
+    按最大长度 chunk_size 分割文本，满足：
+    - 块长度不超过 chunk_size；
+    - 遇到停顿符号（，；：。、 ,;:）时，在其前后强制分块，并删除该符号；
+    - 英文句点 '.' 仅在不是小数点时才视为停顿符号；
+    - 问号、感叹号（?？!！）视为普通字符，不触发分割。
 
     Args:
-        text: 要分割的文本
-        chunk_size: 每块的目标长度
+        text (str): 输入文本
+        chunk_size (int): 每块最大长度（必须 > 0）
 
     Returns:
-        list: 分割后的文本块列表
+        list[str]: 分割后的文本块列表
     """
+    if chunk_size <= 0:
+        return []
+
+    # 停顿符号集合（不含 '.'，因其需特殊判断）
+    pause_punctuations = set("，；：。、,;:")
+    normal_punctuation = "?？!！"
+
     chunks = []
+    current_chunk = ""
     i = 0
-    text_length = len(text)
+    n = len(text)
 
-    # 标点符号定义（可根据需要扩展）
-    punctuation = "。？！，；：,.?!;:、"
+    while i < n:
+        char = text[i]
 
-    while i < text_length:
-        # 基础块长度
-        end = min(i + chunk_size, text_length)
+        # 判断当前字符是否为“应触发分割的停顿符”
+        is_pause = False
 
-        # 检查是否需要扩展块
-        if end < text_length and text[end] in punctuation:
-            # 扩展一个字符以包含标点
-            end += 1
+        if char in pause_punctuations:
+            is_pause = True
+        elif char == '.':
+            # 检查是否为小数点：前后均为数字
+            prev_is_digit = (i > 0 and text[i - 1].isdigit())
+            next_is_digit = (i + 1 < n and text[i + 1].isdigit())
+            if prev_is_digit and next_is_digit:
+                # 是小数点，保留，不视为停顿符
+                is_pause = False
+            else:
+                # 不是小数点（如句尾、缩写等），视为停顿符
+                is_pause = True
 
-        # 添加到块列表
-        chunk = text[i:end]
-        if chunk:  # 确保不是空字符串
-            chunks.append(chunk)
+        if is_pause:
+            # 遇到停顿符：先提交当前块（如果非空）
+            if current_chunk:
+                chunks.append(current_chunk)
+                current_chunk = ""
+            # 跳过该停顿符（不加入任何块）
+            i += 1
+        else:
+            # 普通字符（包括 ? ! ？！和小数点）
+            if len(current_chunk) >= chunk_size:
+                # 当前块已满
+                # 判断下一个字符是否是普通字符
+                if char in normal_punctuation:
+                    current_chunk += char
+                    chunks.append(current_chunk)
+                    current_chunk = ""
+                    i += 1
+                    continue
+                else:
+                    chunks.append(current_chunk)
+                    current_chunk = ""
 
-        # 移动到下一个起始位置
-        i = end
+
+            # 尝试加入当前字符
+            current_chunk += char
+            i += 1
+
+    # 处理最后一块
+    if current_chunk:
+        chunks.append(current_chunk)
 
     return chunks
 
