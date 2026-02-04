@@ -137,8 +137,9 @@ if __name__ == "__main__":
     import uvicorn
     import argparse
 
+    server_port = int(os.getenv("SERVER_PORT","80"))
     parser = argparse.ArgumentParser(description="音频转录与字幕嵌入API")
-    parser.add_argument("-p", "--port", type=int, default=80, help="服务器端口号 (默认: 80)")
+    parser.add_argument("-p", "--port", type=int, default=server_port, help="服务器端口号 (默认: 80)")
     parser.add_argument("-H", "--host", type=str, default="0.0.0.0", help="服务器主机地址 (默认: 0.0.0.0)")
 
     args = parser.parse_args()
