@@ -5,3 +5,4 @@ src/__pycache__/
 .env
 文档
 test*
+*.pem
