@@ -9,12 +9,6 @@ from typing import Optional
 from s3 import S3Operator
 
 
-# 数据模型定义
-class TranscribeRequest(BaseModel):
-    video_path: str
-    transcript_id: Optional[str] = None
-
-
 class SubtitleData(BaseModel):
     text: str
     start: int
